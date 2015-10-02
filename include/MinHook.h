@@ -89,10 +89,22 @@ typedef HANDLE (WINAPI* ThreadListCreate_t)(DWORD dwFlags, DWORD th32ProcessID);
 typedef BOOL   (WINAPI* ThreadListNext_t)(HANDLE hSnapshot, LPTHREADENTRY32 lpte); // Thread32First, Thread32Next
 typedef BOOL   (WINAPI* ThreadListClose_t)(HANDLE hObject);                        // CloseHandle
 
+typedef enum MH_WORKING_FLAGS
+{
+    // Caller is responsible for executableness of passed addesses
+    MH_FLAGS_SKIP_EXEC_CHECK   = 0x00000001,
+    // Otherwise - default mode
+    MH_FLAGS_STANDARD          = 0,
+}
+MH_WORKING_FLAGS;
+
 typedef struct MH_INITIALIZE
 {
     // Size of structure
     DWORD cbSize;
+
+    // Minhook working modes (enum MH_WORKING_FLAGS)
+    DWORD Flags;
 
     // Caller may pass NULL to these functions to disable 'threading'
 

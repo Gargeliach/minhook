@@ -96,6 +96,9 @@ volatile LONG g_isLocked = FALSE;
 // Private heap handle. If not NULL, this library is initialized.
 HANDLE g_hHeap = NULL;
 
+// Minhook working modes (enum MH_WORKING_FLAGS)
+DWORD g_Flags = MH_FLAGS_STANDARD;
+
 // Hook entries.
 struct
 {
@@ -509,6 +512,9 @@ MH_STATUS WINAPI MH_InitializeEx(MH_INITIALIZE* pInit)
         ThreadListFirst = pInit->ThreadListFirst;
         ThreadListNext = pInit->ThreadListNext;
         ThreadListClose = pInit->ThreadListClose;
+
+        // Minhook working modes
+        g_Flags = pInit->Flags;
     }
 
     return status;
@@ -562,7 +568,9 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
 
     if (g_hHeap != NULL)
     {
-        if (IsExecutableAddress(pTarget) && IsExecutableAddress(pDetour))
+        if ((g_Flags & MH_FLAGS_SKIP_EXEC_CHECK)
+            || (IsExecutableAddress(pTarget) && IsExecutableAddress(pDetour))
+            )
         {
             UINT pos = FindHookEntry(pTarget);
             if (pos == INVALID_HOOK_POS)
