@@ -83,10 +83,27 @@ typedef enum MH_STATUS
 }
 MH_STATUS;
 
+// CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD) has large overhead
+// In some cases, caller application may provide thread list itself
+typedef HANDLE (WINAPI* ThreadListCreate_t)(DWORD dwFlags, DWORD th32ProcessID);   // CreateToolhelp32Snapshot
+typedef BOOL   (WINAPI* ThreadListNext_t)(HANDLE hSnapshot, LPTHREADENTRY32 lpte); // Thread32First, Thread32Next
+typedef BOOL   (WINAPI* ThreadListClose_t)(HANDLE hObject);                        // CloseHandle
+
 typedef struct MH_INITIALIZE
 {
     // Size of structure
     DWORD cbSize;
+
+    // Caller may pass NULL to these functions to disable 'threading'
+
+    // hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    ThreadListCreate_t ThreadListCreate;
+    // Thread32First(hSnapshot, &te)
+    ThreadListNext_t   ThreadListFirst;
+    // Thread32Next(hSnapshot, &te)
+    ThreadListNext_t   ThreadListNext;
+    // CloseHandle(hSnapshot);
+    ThreadListClose_t  ThreadListClose;
 }
 MH_INITIALIZE;
 

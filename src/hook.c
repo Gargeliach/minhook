@@ -79,6 +79,13 @@ typedef struct _FROZEN_THREADS
     UINT    size;           // Actual number of data items
 } FROZEN_THREADS, *PFROZEN_THREADS;
 
+// CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD) has large overhead
+// In some cases, caller application may provide thread list itself
+ThreadListCreate_t ThreadListCreate = CreateToolhelp32Snapshot;
+ThreadListNext_t   ThreadListFirst = Thread32First;
+ThreadListNext_t   ThreadListNext = Thread32Next;
+ThreadListClose_t  ThreadListClose = CloseHandle;
+
 //-------------------------------------------------------------------------
 // Global Variables:
 //-------------------------------------------------------------------------
@@ -259,12 +266,12 @@ static void ProcessThreadIPs(HANDLE hThread, UINT pos, UINT action)
 //-------------------------------------------------------------------------
 static VOID EnumerateThreads(PFROZEN_THREADS pThreads)
 {
-    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    HANDLE hSnapshot = ThreadListCreate ? ThreadListCreate(TH32CS_SNAPTHREAD, 0) : INVALID_HANDLE_VALUE;
     if (hSnapshot != INVALID_HANDLE_VALUE)
     {
         THREADENTRY32 te;
         te.dwSize = sizeof(THREADENTRY32);
-        if (Thread32First(hSnapshot, &te))
+        if (ThreadListFirst(hSnapshot, &te))
         {
             do
             {
@@ -294,9 +301,9 @@ static VOID EnumerateThreads(PFROZEN_THREADS pThreads)
                 }
 
                 te.dwSize = sizeof(THREADENTRY32);
-            } while (Thread32Next(hSnapshot, &te));
+            } while (ThreadListNext(hSnapshot, &te));
         }
-        CloseHandle(hSnapshot);
+        ThreadListClose(hSnapshot);
     }
 }
 
@@ -495,6 +502,13 @@ MH_STATUS WINAPI MH_InitializeEx(MH_INITIALIZE* pInit)
 
     if ((status == MH_OK) && pInit && (pInit->cbSize >= sizeof(MH_INITIALIZE)))
     {
+        // CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD) has large overhead
+        // In some cases, caller application may provide thread list itself
+        // Caller is responsible to pass valid pointers or NULLs
+        ThreadListCreate = pInit->ThreadListCreate;
+        ThreadListFirst = pInit->ThreadListFirst;
+        ThreadListNext = pInit->ThreadListNext;
+        ThreadListClose = pInit->ThreadListClose;
     }
 
     return status;
