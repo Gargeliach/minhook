@@ -489,6 +489,18 @@ MH_STATUS WINAPI MH_Initialize(VOID)
 }
 
 //-------------------------------------------------------------------------
+MH_STATUS WINAPI MH_InitializeEx(MH_INITIALIZE* pInit)
+{
+    MH_STATUS status = MH_Initialize();
+
+    if ((status == MH_OK) && pInit && (pInit->cbSize >= sizeof(MH_INITIALIZE)))
+    {
+    }
+
+    return status;
+}
+
+//-------------------------------------------------------------------------
 MH_STATUS WINAPI MH_Uninitialize(VOID)
 {
     MH_STATUS status = MH_OK;

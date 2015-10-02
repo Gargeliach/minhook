@@ -83,6 +83,13 @@ typedef enum MH_STATUS
 }
 MH_STATUS;
 
+typedef struct MH_INITIALIZE
+{
+    // Size of structure
+    DWORD cbSize;
+}
+MH_INITIALIZE;
+
 // Can be passed as a parameter to MH_EnableHook, MH_DisableHook,
 // MH_QueueEnableHook or MH_QueueDisableHook.
 #define MH_ALL_HOOKS NULL
@@ -94,6 +101,9 @@ extern "C" {
     // Initialize the MinHook library. You must call this function EXACTLY ONCE
     // at the beginning of your program.
     MH_STATUS WINAPI MH_Initialize(VOID);
+
+    // Same as MH_Initialize, but allow to pass working modes and options
+    MH_STATUS WINAPI MH_InitializeEx(MH_INITIALIZE* pInit);
 
     // Uninitialize the MinHook library. You must call this function EXACTLY
     // ONCE at the end of your program.
