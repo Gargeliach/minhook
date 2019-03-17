@@ -326,7 +326,7 @@ static VOID Freeze(PFROZEN_THREADS pThreads, UINT pos, UINT action)
             HANDLE hThread = OpenThread(THREAD_ACCESS, FALSE, pThreads->pItems[i]);
             if (hThread != NULL)
             {
-                SuspendThread(hThread);
+                SuspendThread(hThread);  // -V720
                 ProcessThreadIPs(hThread, pos, action);
                 CloseHandle(hThread);
             }
